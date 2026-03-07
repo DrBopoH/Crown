@@ -2,24 +2,8 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 pub fn build(b: *std.Build) void {
-	const target = b.standardTargetOptions(
-		.{
-			.default_target = switch (builtin.abi) {
-				.android => .{
-					.cpu_arch = .aarch64,
-					.os_tag = .linux,
-					.abi = .android,
-				},
-				else => .{} 
-			}
-		}
-	);
-	
-	const optimize = b.standardOptimizeOption(
-		.{
-			.preferred_optimize_mode = .ReleaseFast,
-		}
-	);
+	const target = b.standardTargetOptions(.{});
+	const optimize = b.standardOptimizeOption(.{});
 
 	const exe = b.addExecutable(.{
 		.name = "Crown",
@@ -27,10 +11,13 @@ pub fn build(b: *std.Build) void {
 			.root_source_file = b.path("main.zig"),
 			.target = target,
 			.optimize = optimize,
+			.strip = true,
 		}),
 	});
 
 	exe.pie = true;    
+	exe.lto = .full;
+
 	b.installArtifact(exe);
 
 	const run_cmd = b.addRunArtifact(exe);
